@@ -51,19 +51,3 @@ sudo su postgres -c "psql -c \"CREATE USER washman WITH LOGIN PASSWORD 'cotton';
 sudo su postgres -c "psql -c \"CREATE DATABASE carwash WITH OWNER washman;\""
 
 echo "\nDONE"
-
-echo "\n------------\nINSTALL CARWASH MONITOR\n------------\n"
-
-git clone https://github.com/andycrockett/carwashmonitor $SCRIPT_DIR/../app
-sh $SCRIPT_DIR/../app/build-gui.sh
-sh $SCRIPT_DIR/../app/build-monitor.sh
-
-echo "\nINSTALL AND BUILD COMPLETE"
-
-echo "\n------------\nSETUP COMPLETE FUCK YOU\n------------\n"
-
-echo "\n------------\nSTARTING THE PARTY\n------------\n"
-
-$SCRIPT_DIR/../app/cwmonitor > /dev/null 2>&1 &
-sleep 1
-$SCRIPT_DIR/../app/cw-gui
