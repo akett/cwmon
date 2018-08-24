@@ -9,6 +9,7 @@
 #include <time.h>
 #include <wiringPi.h>
 #include <cmath>
+#include <thread>
 
 // declare global variables :DDD
 bool stop_program = false;

@@ -59,6 +59,9 @@ public:
 		menu_okay_pin_start,
 		menu_okay_pin_end;
 
+
+
+
 	void start() {
 		wiringPiSetup();
 
@@ -213,6 +216,8 @@ public:
 		attroff(COLOR_PAIR(COLOR_GREEN_BLACK));
 
 		//mvprintw(window->ymax, 50, "Loop time: %lf seconds.", timer->loop_actual);
+		window->checkInput();
+		mvprintw(window->ymax, 50, (window->mouse_pressed) ? "  MOUSE TRUE  " : " MOUSE FALSE ");
 	}
 
 	void getTemperature()

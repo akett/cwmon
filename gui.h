@@ -29,13 +29,21 @@ public:
 	int vertical_quad_height;
 	int vertical_quad_top = 2;
 
+	MEVENT event;
+	bool mouse_pressed = false;
+	int mouse_x, mouse_y;
+	int c;
+
 	Window () {
-		initscr();
+		WINDOW *win = initscr();
 		cbreak();
 		noecho();
 		curs_set(0);
+		nodelay(win, true);
 
-		getmaxyx(stdscr, ymax, xmax);
+		keypad(win, true);
+
+		getmaxyx(win, ymax, xmax);
 
 		ymax = ymax - 1;
 		xmax = xmax - 1;
@@ -62,6 +70,20 @@ public:
 
 		// color text color background
 		init_pair(13, COLOR_WHITE, COLOR_RED);
+
+		mousemask(ALL_MOUSE_EVENTS, NULL);
+	}
+
+	void checkInput() {
+		c = getch();
+		switch(c) {
+			case KEY_MOUSE:
+			if(getmouse(&event) == OK)
+			{
+				if(event.bstate & BUTTON1_PRESSED) mouse_pressed = true;
+				if(event.bstate & BUTTON1_RELEASED) mouse_pressed = false;
+			}
+		}
 	}
 
 	void onLoopStart() {
