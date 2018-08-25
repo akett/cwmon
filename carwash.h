@@ -60,7 +60,8 @@ public:
 		menu_okay_pin_end;
 
 
-
+	int selected_bay_options = 0;
+	int selected_option = 0;
 
 	void start() {
 		wiringPiSetup();
@@ -76,9 +77,9 @@ public:
 		}
 	}
 
-	void run(Database *db, Timer *timer, Window *window)
+	void run(Database *db, Timer *timer, Display *display)
 	{
-		handleMenu(db, timer, window);
+		//handleMenu(db, timer, display);
 
 		if(gui_delay_count >= gui_delay) gui_delay_count = 1;
 		gui_delay_count++;
@@ -125,7 +126,7 @@ public:
 		// print time
 		current_time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 		time_string = ctime(&current_time);
-		mvprintw(0, window->xmax/2 - 2 - strlen(time_string) / 2, "%s", time_string);
+		mvprintw(0, display->xmax/2 - 2 - strlen(time_string) / 2, "%s", time_string);
 
 		// print operating temperature
 		getTemperature();
@@ -144,9 +145,9 @@ public:
 
 			currentBay->checkPins(db, timer);
 
-			int vq_left = (window->vertical_quad_width * bay) - window->vertical_quad_width;
-			int vq_right = (window->vertical_quad_width * bay);
-			int vq_center = (window->vertical_quad_width * bay) - (window->vertical_quad_width / 2) + 1;
+			int vq_left = (display->vertical_quad_width * bay) - display->vertical_quad_width;
+			int vq_right = (display->vertical_quad_width * bay);
+			int vq_center = (display->vertical_quad_width * bay) - (display->vertical_quad_width / 2) + 1;
 
 			int titleLength = 17;
 			std::string timerTitle = " TIMER          ";
@@ -155,53 +156,53 @@ public:
 			std::string pumpTitle = "           PUMP ";
 			std::string pumpTitleDecoration = "      ";
 			attron(COLOR_PAIR(currentBay->timer_running ? COLOR_GREEN_BLACK : COLOR_RED_WHITE));
-			mvprintw(window->vertical_quad_top + 1,     vq_center - (titleLength / 2), timerTitle.c_str());
-			mvprintw(window->vertical_quad_top + 2, vq_center - (titleLength / 2) - 2, timerTitleDecoration.c_str());
+			mvprintw(display->vertical_quad_top + 1,     vq_center - (titleLength / 2), timerTitle.c_str());
+			mvprintw(display->vertical_quad_top + 2, vq_center - (titleLength / 2) - 2, timerTitleDecoration.c_str());
 			attroff(COLOR_PAIR(currentBay->timer_running ? COLOR_GREEN_BLACK : COLOR_RED_WHITE));
 
 			attron(COLOR_PAIR(currentBay->timer_running ? COLOR_BLACK_CYAN : COLOR_BLACK_GREEN));
-			mvprintw(window->vertical_quad_top + 2, vq_center - (strlen(bayTitle.c_str()) / 2), bayTitle.c_str());
+			mvprintw(display->vertical_quad_top + 2, vq_center - (strlen(bayTitle.c_str()) / 2), bayTitle.c_str());
 			attroff(COLOR_PAIR(currentBay->timer_running ? COLOR_BLACK_CYAN : COLOR_BLACK_GREEN));
 
 			attron(COLOR_PAIR(currentBay->pump_running ? COLOR_GREEN_BLACK : COLOR_RED_WHITE));
-			mvprintw(window->vertical_quad_top + 2, vq_center + (strlen(bayTitle.c_str()) / 2) + 1, pumpTitleDecoration.c_str());
-			mvprintw(window->vertical_quad_top + 3, vq_center - (titleLength / 2), pumpTitle.c_str());
+			mvprintw(display->vertical_quad_top + 2, vq_center + (strlen(bayTitle.c_str()) / 2) + 1, pumpTitleDecoration.c_str());
+			mvprintw(display->vertical_quad_top + 3, vq_center - (titleLength / 2), pumpTitle.c_str());
 			attroff(COLOR_PAIR(currentBay->pump_running ? COLOR_GREEN_BLACK : COLOR_RED_WHITE));
 
 			if(currentBay->timer_running) {
 				attron(COLOR_PAIR(COLOR_BLACK_CYAN));
-				mvprintw(window->vertical_quad_top, vq_left + 4, timer->toDurationString(currentBay->current_timer_time, true).c_str());
+				mvprintw(display->vertical_quad_top, vq_left + 4, timer->toDurationString(currentBay->current_timer_time, true).c_str());
 				attroff(COLOR_PAIR(COLOR_BLACK_CYAN));
 
 				attron(COLOR_PAIR(COLOR_BLACK_CYAN));
-				mvprintw(window->vertical_quad_top + 4, vq_right - 2 - strlen(timer->toDurationString(currentBay->current_pump_time, true).c_str()), timer->toDurationString(currentBay->current_pump_time, true).c_str());
+				mvprintw(display->vertical_quad_top + 4, vq_right - 2 - strlen(timer->toDurationString(currentBay->current_pump_time, true).c_str()), timer->toDurationString(currentBay->current_pump_time, true).c_str());
 				attroff(COLOR_PAIR(COLOR_BLACK_CYAN));
 			}
 
-			mvprintw(window->vertical_quad_top + 6, vq_left + 4, "LAST SESSION");
+			mvprintw(display->vertical_quad_top + 6, vq_left + 4, "LAST SESSION");
 			attron(COLOR_PAIR(COLOR_BLACK_GREEN));
-			mvprintw(window->vertical_quad_top + 7, vq_left + 4, (std::string("TIME: ") + timer->toDurationString(currentBay->last_timer_runtime, false)).c_str());
-			mvprintw(window->vertical_quad_top + 8, vq_left + 4, (std::string("PUMP: ") + timer->toDurationString(currentBay->last_pump_runtime, true)).c_str());
+			mvprintw(display->vertical_quad_top + 7, vq_left + 4, (std::string("TIME: ") + timer->toDurationString(currentBay->last_timer_runtime, false)).c_str());
+			mvprintw(display->vertical_quad_top + 8, vq_left + 4, (std::string("PUMP: ") + timer->toDurationString(currentBay->last_pump_runtime, true)).c_str());
 			attroff(COLOR_PAIR(COLOR_BLACK_GREEN));
 
 
-			mvprintw(window->vertical_quad_top + 10, vq_left + 4, "TIMER TOTAL");
-			mvprintw(window->vertical_quad_top + 12, vq_left + 4, "PUMP TOTAL");
+			mvprintw(display->vertical_quad_top + 10, vq_left + 4, "TIMER TOTAL");
+			mvprintw(display->vertical_quad_top + 12, vq_left + 4, "PUMP TOTAL");
 
 			attron(COLOR_PAIR(COLOR_BLACK_GREEN));
-			mvprintw(window->vertical_quad_top + 11, vq_left + 5, timer->toDurationString(currentBay->db_total_timer_time, false).c_str());
-			mvprintw(window->vertical_quad_top + 13, vq_left + 5, timer->toDurationString(currentBay->db_total_pump_time, true).c_str());
+			mvprintw(display->vertical_quad_top + 11, vq_left + 5, timer->toDurationString(currentBay->db_total_timer_time, false).c_str());
+			mvprintw(display->vertical_quad_top + 13, vq_left + 5, timer->toDurationString(currentBay->db_total_pump_time, true).c_str());
 			attroff(COLOR_PAIR(COLOR_BLACK_GREEN));
 
 
-			mvprintw(window->vertical_quad_top + 14, vq_left + 4, "MANUAL TOTAL");
+			mvprintw(display->vertical_quad_top + 14, vq_left + 4, "MANUAL TOTAL");
 			attron(COLOR_PAIR(COLOR_BLACK_GREEN));
-			mvprintw(window->vertical_quad_top + 15, vq_left + 4, (std::string("-") + timer->toDurationString((double)(currentBay->db_manual_coin_count*60), false)).c_str());
+			mvprintw(display->vertical_quad_top + 15, vq_left + 4, (std::string("-") + timer->toDurationString((double)(currentBay->db_manual_coin_count*60), false)).c_str());
 			attroff(COLOR_PAIR(COLOR_BLACK_GREEN));
 
-			mvprintw(window->vertical_quad_top + 17, vq_left + 4, "BAY REVENUE");
+			mvprintw(display->vertical_quad_top + 17, vq_left + 4, "BAY REVENUE");
 			attron(COLOR_PAIR(COLOR_BLACK_GREEN));
-			mvprintw(window->vertical_quad_top + 18, vq_left + 5, "$%.2f", (((currentBay->db_total_timer_time + timer->roundToMinute(currentBay->current_timer_time)) - (double)(currentBay->db_manual_coin_count*60)) / 60) / 4);
+			mvprintw(display->vertical_quad_top + 18, vq_left + 5, "$%.2f", (((currentBay->db_total_timer_time + timer->roundToMinute(currentBay->current_timer_time)) - (double)(currentBay->db_manual_coin_count*60)) / 60) / 4);
 			attroff(COLOR_PAIR(COLOR_BLACK_GREEN));
 
 			total_revenue += (((currentBay->db_total_timer_time + timer->roundToMinute(currentBay->current_timer_time)) - (double)(currentBay->db_manual_coin_count*60)) / 60) / 4;
@@ -212,12 +213,12 @@ public:
 		tr_string = tr_string.substr(0, strlen(tr_string.c_str()) - 4) + " ";
 
 		attron(COLOR_PAIR(COLOR_GREEN_BLACK));
-		mvprintw(0, window->xmax - strlen(tr_string.c_str()), tr_string.c_str());
+		mvprintw(0, display->xmax - strlen(tr_string.c_str()), tr_string.c_str());
 		attroff(COLOR_PAIR(COLOR_GREEN_BLACK));
 
-		//mvprintw(window->ymax, 50, "Loop time: %lf seconds.", timer->loop_actual);
-		window->checkInput();
-		mvprintw(window->ymax, 50, (window->mouse_pressed) ? "  MOUSE TRUE  " : " MOUSE FALSE ");
+		//mvprintw(display->ymax, 50, "Loop time: %lf seconds.", timer->loop_actual);
+		display->checkInput();
+		handleInput(db, timer, display);
 	}
 
 	void getTemperature()
@@ -243,7 +244,90 @@ public:
 		average_temp = (temp_average_agg / temp_average_to) * 9/5 + 32;
 	}
 
-	void handleMenu(Database *db, Timer *timer, Window *window)
+	void handleInput(Database *db, Timer *timer, Display *display)
+	{
+		clock_gettime(CLOCK_REALTIME, &menu_now);
+		if(display->has_mouse_event) {
+			clock_gettime(CLOCK_REALTIME, &menu_start);
+			if(selected_bay_options != 0) {
+				if(display->mouse_y == display->vertical_quad_top + 20 && display->mouse_x >= (selected_bay_options-1) * display->vertical_quad_width && display->mouse_x <= display->vertical_quad_width * (selected_bay_options))
+				{
+					selected_option = 1;
+				}
+				if(display->mouse_y == display->vertical_quad_top + 22 && display->mouse_x >= (selected_bay_options-1) * display->vertical_quad_width && display->mouse_x <= display->vertical_quad_width * (selected_bay_options))
+				{
+					selected_option = 2;
+				}
+				if(display->mouse_y == display->vertical_quad_top + 24 && display->mouse_x >= (selected_bay_options-1) * display->vertical_quad_width && display->mouse_x <= display->vertical_quad_width * (selected_bay_options))
+				{
+					selected_option = 3;
+				}
+			}
+			
+			for(int i = 0; i < 4; i++) {
+				if(display->mouse_x >= i * display->vertical_quad_width && display->mouse_x <= display->vertical_quad_width * (i + 1)) {
+					selected_bay_options = i + 1;
+				}
+			}
+
+			display->has_mouse_event = false;
+			display->mouse_x = 0;
+			display->mouse_y = 0;
+		}
+
+		if(getElapsedTime(&menu_start, &menu_now) > 10) {
+			selected_bay_options = 0;
+			selected_option = 0;
+		}
+
+		if(selected_option != 0) {
+			switch(selected_option) {
+				case 1:
+					db->execPrepared(db->beginPrepared("WIPE_BAY_TIMER")(selected_bay_options));
+					db->execPrepared(db->beginPrepared("WIPE_BAY_MANUAL")(selected_bay_options));
+					break;
+				case 2:
+					db->execPrepared(db->beginPrepared("WIPE_BAY_PUMP")(selected_bay_options));
+					break;
+				case 3:
+					db->execPrepared(db->beginPrepared("WIPE_BAY_TIME")(selected_bay_options));
+					db->execPrepared(db->beginPrepared("WIPE_BAY_MANUAL")(selected_bay_options));
+					break;
+			}
+			selected_bay_options = 0;
+			selected_option = 0;
+		}
+
+		if(selected_bay_options != 0) {
+			std::string baySelected = std::string("EDITING BAY " + std::to_string(selected_bay_options));
+			std::string baySelectedPadding((display->vertical_quad_width - strlen(baySelected.c_str())) / 2, ' ');
+			std::string baySelectedString = std::string(baySelectedPadding + baySelected + baySelectedPadding);
+			attron(COLOR_PAIR(COLOR_YELLOW_BLACK));
+			mvprintw(display->ymax, display->vertical_quad_width * (selected_bay_options - 1), baySelectedString.c_str());
+			attroff(COLOR_PAIR(COLOR_YELLOW_BLACK));
+
+
+			std::string resetTimers = std::string("RESET TIMER");
+			std::string resetTimerPadding(((display->vertical_quad_width - strlen(resetTimers.c_str())) / 2) - 1, ' ');
+			std::string resetTimerString = std::string(resetTimerPadding + ' ' + resetTimers + resetTimerPadding);
+
+			std::string resetPump = std::string("RESET PUMP");
+			std::string resetPumpPadding((display->vertical_quad_width - strlen(resetPump.c_str())) / 2, ' ');
+			std::string resetPumpString = std::string(resetPumpPadding + resetPump + resetPumpPadding);
+
+			std::string resetBoth = std::string("RESET BOTH");
+			std::string resetBothPadding((display->vertical_quad_width - strlen(resetBoth.c_str())) / 2, ' ');
+			std::string resetBothString = std::string(resetBothPadding + resetBoth + resetBothPadding);
+
+			attron(COLOR_PAIR(COLOR_GREEN_BLACK));
+			mvprintw(display->vertical_quad_top + 20, display->vertical_quad_width * (selected_bay_options - 1), resetTimerString.c_str());
+			mvprintw(display->vertical_quad_top + 22, display->vertical_quad_width * (selected_bay_options - 1), resetPumpString.c_str());
+			mvprintw(display->vertical_quad_top + 24, display->vertical_quad_width * (selected_bay_options - 1), resetBothString.c_str());
+			attroff(COLOR_PAIR(COLOR_GREEN_BLACK));
+		}
+	}
+
+	void handleMenu(Database *db, Timer *timer, Display *display)
 	{
 		clock_gettime(CLOCK_REALTIME, &menu_now);
 
@@ -339,7 +423,7 @@ public:
 		}
 
 		if(menu_open) {
-			mvprintw(window->ymax - 2, 10, "CONTROL MENU");
+			mvprintw(display->ymax - 2, 10, "CONTROL MENU");
 			std::string option_name;
 			switch(menu_option) {
 				case 1:
@@ -362,7 +446,7 @@ public:
 					break;
 			}
 			attron(COLOR_PAIR(COLOR_GREEN_BLACK));
-			mvprintw(window->ymax - 1, 10, option_name.c_str());
+			mvprintw(display->ymax - 1, 10, option_name.c_str());
 			attroff(COLOR_PAIR(COLOR_GREEN_BLACK));
 		}
 	}

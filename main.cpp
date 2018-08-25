@@ -1,6 +1,6 @@
 #include "main.h"
 #include "database.h"
-#include "gui.h"
+#include "display.h"
 #include "carwash.h"
 
 int main ()
@@ -35,7 +35,12 @@ int main ()
 	db->prepareStatement("INSERT_SESSION", "INSERT INTO bay_sessions (bay, timer_time, pump_time) VALUES ($1, $2, $3)");
 	db->prepareStatement("INSERT_COIN", "INSERT INTO bay_manual_inserts (bay) VALUES ($1);");
 
-	db->prepareStatement("WIPE_ALL_BAY_TIME", "DELETE FROM bay_sessions;");
+	db->prepareStatement("WIPE_BAY_TIMER", "UPDATE bay_sessions SET timer_time = 0 WHERE bay = $1;");
+	db->prepareStatement("WIPE_BAY_MANUAL", "DELETE FROM bay_manual_inserts WHERE bay = $1;");
+	db->prepareStatement("WIPE_BAY_PUMP", "UPDATE bay_sessions SET pump_time = 0 WHERE bay = $1;");
+	db->prepareStatement("WIPE_BAY_TIME", "DELETE FROM bay_sessions WHERE bay = $1;");
+
+
 	db->prepareStatement("WIPE_TIMER_TIME", "UPDATE bay_sessions SET timer_time = 0;");
 	db->prepareStatement("WIPE_PUMP_TIME", "UPDATE bay_sessions SET pump_time = 0;");
 	db->prepareStatement("WIPE_MANUAL_TIME", "DELETE FROM bay_manual_inserts;");
@@ -43,27 +48,21 @@ int main ()
 
 	Timer* timer = new Timer();
 	Carwash* carwash = new Carwash();
-	Window* window = new Window();
+	Display* display = new Display();
+
+	display->start();
 
 	carwash->start();
 
-    int gui_update_delay = 4; // loop cycles (1 cycle = ~.05 seconds)
-    int gui_update_count = 1;
-
 	while(!stop_program) {
 		timer->onLoopStart();
-		window->onLoopStart();
-
-		if(gui_update_count >= gui_update_delay) gui_update_count = 1;
-		gui_update_count++;
-
-		carwash->run(db, timer, window);
-
-		window->onLoopEnd();
+		display->onLoopStart();
+		carwash->run(db, timer, display);
+		display->onLoopEnd();
 		timer->onLoopEnd();
 	}
 
-	window->end();
+	display->end();
 
 	carwash->shutdown();
 

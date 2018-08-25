@@ -1,5 +1,5 @@
-#ifndef _GUI_H_INCLUDED_
-#define _GUI_H_INCLUDED_
+#ifndef _DISPLAY_H_INCLUDED_
+#define _DISPLAY_H_INCLUDED_
 
 const int COLOR_BLUE_BLACK   = 1;
 const int COLOR_CYAN_BLACK   = 2;
@@ -19,7 +19,7 @@ const int COLOR_RED_WHITE    = 13;
 
 #include <ncurses.h>
 
-class Window
+class Display
 {
 public:
 	// get coordinates
@@ -30,17 +30,16 @@ public:
 	int vertical_quad_top = 2;
 
 	MEVENT event;
-	bool mouse_pressed = false;
+	bool has_mouse_event = false;
 	int mouse_x, mouse_y;
 	int c;
 
-	Window () {
+	void start() {
 		WINDOW *win = initscr();
 		cbreak();
 		noecho();
 		curs_set(0);
 		nodelay(win, true);
-
 		keypad(win, true);
 
 		getmaxyx(win, ymax, xmax);
@@ -80,8 +79,12 @@ public:
 			case KEY_MOUSE:
 			if(getmouse(&event) == OK)
 			{
-				if(event.bstate & BUTTON1_PRESSED) mouse_pressed = true;
-				if(event.bstate & BUTTON1_RELEASED) mouse_pressed = false;
+				if(event.bstate & BUTTON1_RELEASED)
+				{
+					mouse_x = event.x;
+					mouse_y = event.y;
+					has_mouse_event = true;
+				}
 			}
 		}
 	}
