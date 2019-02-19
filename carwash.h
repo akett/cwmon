@@ -197,15 +197,15 @@ public:
 
 			mvprintw(display->vertical_quad_top + 14, vq_left + 4, "MANUAL TOTAL");
 			attron(COLOR_PAIR(COLOR_BLACK_GREEN));
-			mvprintw(display->vertical_quad_top + 15, vq_left + 4, (std::string("-") + timer->toDurationString((double)(currentBay->db_manual_coin_count*60), false)).c_str());
+			mvprintw(display->vertical_quad_top + 15, vq_left + 4, (std::string("-") + timer->toDurationString((double)(currentBay->db_manual_coin_count * timer->time_per_quarter), false)).c_str());
 			attroff(COLOR_PAIR(COLOR_BLACK_GREEN));
 
 			mvprintw(display->vertical_quad_top + 17, vq_left + 4, "BAY REVENUE");
 			attron(COLOR_PAIR(COLOR_BLACK_GREEN));
-			mvprintw(display->vertical_quad_top + 18, vq_left + 5, "$%.2f", (((currentBay->db_total_timer_time + timer->roundToMinute(currentBay->current_timer_time)) - (double)(currentBay->db_manual_coin_count*60)) / 60) / 4);
+			mvprintw(display->vertical_quad_top + 18, vq_left + 5, "$%.2f", (((currentBay->db_total_timer_time + timer->roundToQuarterTime(currentBay->current_timer_time)) - (double)(currentBay->db_manual_coin_count * timer->time_per_quarter)) / timer->time_per_quarter) / 4);
 			attroff(COLOR_PAIR(COLOR_BLACK_GREEN));
 
-			total_revenue += (((currentBay->db_total_timer_time + timer->roundToMinute(currentBay->current_timer_time)) - (double)(currentBay->db_manual_coin_count*60)) / 60) / 4;
+			total_revenue += (((currentBay->db_total_timer_time + timer->roundToQuarterTime(currentBay->current_timer_time)) - (double)(currentBay->db_manual_coin_count * timer->time_per_quarter)) / timer->time_per_quarter) / 4;
 
 		}
 

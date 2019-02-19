@@ -1,4 +1,5 @@
 #include "main.h"
+#include "timer.h"
 #include "database.h"
 #include "display.h"
 #include "carwash.h"
